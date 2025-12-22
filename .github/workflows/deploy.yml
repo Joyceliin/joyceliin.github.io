@@ -1,22 +1,10 @@
-name: Deploy MkDocs to GitHub Pages
-
-on:
-  push:
-    branches:
-      - main
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    environment:              # 👈 OBRIGATÓRIO
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout
@@ -41,4 +29,5 @@ jobs:
           path: site
 
       - name: Deploy to GitHub Pages
+        id: deployment               # 👈 necessário para url
         uses: actions/deploy-pages@v4
