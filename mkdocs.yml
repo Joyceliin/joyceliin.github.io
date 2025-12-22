@@ -1,0 +1,28 @@
+site_name: Joyce Lima
+site_description: Engenharia e Arquitetura de Dados
+site_url: https://joyceliin.github.io/
+
+theme:
+  name: material
+  language: pt
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - search.highlight
+    - content.code.copy
+
+nav:
+  - Início: index.md
+  - Sobre: sobre.md
+  - Experiência: experiencia.md
+  - Projetos: projetos.md
+  - Arquitetura:
+      - Visão Geral: arquitetura/index.md
+      - Dados: arquitetura/dados.md
+      - Airflow: arquitetura/airflow.md
+      - Kafka: arquitetura/kafka.md
+  - Boas Práticas:
+      - Governança: boas-praticas/governanca.md
+  - Blog:
+      - Primeiro Post: blog/2025-01-01-primeiro-post.md
