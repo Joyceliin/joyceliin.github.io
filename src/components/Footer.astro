@@ -9,12 +9,10 @@ interface Props {
 const { lang } = Astro.props;
 const { profile } = getData(lang);
 const t = ui[lang];
-const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
   <div class="site-footer__inner">
-    <p>© {year} {profile.name}</p>
     <p class="site-footer__links">
       <a href={`mailto:${profile.email}`}>{t.email}</a>
       <a href={profile.github} target="_blank" rel="noopener noreferrer">GitHub</a>

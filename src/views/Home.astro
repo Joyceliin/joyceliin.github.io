@@ -18,7 +18,7 @@ const other: Lang = lang === "pt" ? "en" : "pt";
 
 <BaseLayout title={profile.name} description={`${profile.role}. ${profile.summary}`} lang={lang} alt={routes.home[other]}>
   <header class="page-intro">
-    <p class="eyebrow">{profile.name} · {profile.role}</p>
+    <p class="eyebrow">{profile.role}</p>
     <h1 class="hero__headline">{profile.headline}.</h1>
     {home.paragraphs.map((p) => <p class="hero__lead">{p}</p>)}
     <div class="hero__actions">
