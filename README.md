@@ -58,9 +58,3 @@ Gera `public/og.png` e `public/og-en.png`. Commite os dois arquivos.
 
 - GitHub: [github.com/joycelnog](https://github.com/joycelnog)
 - Email: joycelnog@gmail.com
-
-## Nota sobre `contexto/`
-
-A pasta `contexto/` (rascunhos e arquivos locais) fica fora do site
-publicado e deve permanecer local, ignorada pelo Git. Não entra no
-portfólio público.
