@@ -1,0 +1,96 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ExperienceCounter from "../components/ExperienceCounter.astro";
+import { getData } from "../data";
+import { routes, ui, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = ui[lang];
+const { about, certifications, education, inProgress, skillGroups, profile } = getData(lang);
+const other: Lang = lang === "pt" ? "en" : "pt";
+const description =
+  lang === "pt"
+    ? `Trajetória, formação e foco de ${profile.name} em engenharia de dados.`
+    : `${profile.name}'s background, education and focus in data engineering.`;
+---
+
+<BaseLayout title={t.aboutTitle} description={description} lang={lang} alt={routes.about[other]}>
+  <header class="page-intro">
+    <p class="eyebrow">{t.aboutTitle}</p>
+    <h1 class="page-intro__title">{about.heading}</h1>
+    <p class="page-intro__lead">
+      {about.leadBefore} <ExperienceCounter variant="inline" />
+      {about.leadAfter}
+    </p>
+  </header>
+
+  <div class="prose">
+    {about.paragraphs.map((p) => <p>{p}</p>)}
+
+    <h2>{t.howIWork}</h2>
+    <p>{about.howIWorkLead}</p>
+    <ol>
+      {
+        about.howIWork.map((item) => (
+          <li>
+            <strong>{item.title}</strong> {item.text}
+          </li>
+        ))
+      }
+    </ol>
+    {about.howIWorkClosing.map((p) => <p>{p}</p>)}
+
+    <h2>{t.skills}</h2>
+  </div>
+
+  <ul class="stack-grid">
+    {
+      skillGroups.map((group) => (
+        <li class="stack-group">
+          <p class="stack-group__label">{group.label}</p>
+          <ul class="chips">
+            {group.items.map((item) => (
+              <li class="chip">{item}</li>
+            ))}
+          </ul>
+        </li>
+      ))
+    }
+  </ul>
+
+  <div class="prose">
+    <h2>{t.education}</h2>
+    <p>
+      <strong>{education.degree}</strong><br />
+      {education.school}, {t.completedIn} {education.year}
+    </p>
+    <p><strong>{t.languageLabel}:</strong> {education.language}</p>
+
+    <h2>{t.certs}</h2>
+    <ul>
+      {
+        certifications.map((c) => (
+          <li>
+            {c.name} <span class="muted">{c.year}</span>
+          </li>
+        ))
+      }
+      {
+        inProgress.map((c) => (
+          <li>
+            {c.name} <span class="muted">{t.inProgress}, {c.year}</span>
+          </li>
+        ))
+      }
+    </ul>
+
+    <h2>{t.focusNow}</h2>
+    <ul>
+      {about.focusNow.map((f) => <li>{f}</li>)}
+    </ul>
+  </div>
+</BaseLayout>

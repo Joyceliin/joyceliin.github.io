@@ -1,0 +1,61 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Mermaid from "../components/Mermaid.astro";
+import type { Project } from "../data/projects";
+import { caseHref, routes, ui, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+  project: Project;
+}
+
+const { lang, project } = Astro.props;
+const t = ui[lang];
+const { Content } = await project.render();
+const repoUrl = project.data.repoUrl?.trim() ?? "";
+const other: Lang = lang === "pt" ? "en" : "pt";
+---
+
+<BaseLayout
+  title={project.data.title}
+  description={project.data.summary}
+  lang={lang}
+  alt={caseHref(project.caseSlug, other)}
+>
+  <article class="page-intro">
+    <a class="back-link" href={routes.projects[lang]}>{t.backToCases}</a>
+    <p class="eyebrow">{project.data.meta}</p>
+    <h1 class="page-intro__title">{project.data.title}</h1>
+    <p class="page-intro__lead">{project.data.summary}</p>
+
+    {
+      project.data.results.length > 0 && (
+        <ul class="result-strip" aria-label={t.resultsAria}>
+          {project.data.results.map((r) => (
+            <li>{r}</li>
+          ))}
+        </ul>
+      )
+    }
+
+    <ul class="chips project-detail__tags" aria-label={t.techAria}>
+      {project.data.tags.map((tag) => <li class="chip">{tag}</li>)}
+    </ul>
+
+    {
+      repoUrl && (
+        <p class="project-repo">
+          <span class="project-repo__label">{t.repository}</span>
+          <a href={repoUrl} target="_blank" rel="noopener noreferrer">
+            {repoUrl.replace(/^https?:\/\//, "")}
+          </a>
+        </p>
+      )
+    }
+
+    <div class="prose project-prose">
+      <Content />
+    </div>
+  </article>
+  <Mermaid lang={lang} />
+</BaseLayout>

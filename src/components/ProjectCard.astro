@@ -1,0 +1,46 @@
+---
+import { ui, type Lang } from "../i18n/ui";
+
+interface Props {
+  href: string;
+  title: string;
+  summary: string;
+  meta: string;
+  tags: string[];
+  results?: string[];
+  /** h2 na página de projetos, h3 quando o card fica dentro de uma seção. */
+  headingLevel?: 2 | 3;
+  lang?: Lang;
+}
+
+const { href, title, summary, meta, tags, results = [], headingLevel = 2, lang = "pt" } = Astro.props;
+const t = ui[lang];
+const Heading = headingLevel === 3 ? "h3" : "h2";
+---
+
+<li>
+  <a class="project-card" href={href}>
+    <span class="project-card__meta">{meta}</span>
+    <Heading class="project-card__title">{title}</Heading>
+    <p class="project-card__summary">{summary}</p>
+    {
+      results.length > 0 && (
+        <ul class="project-card__results">
+          {results.map((r) => (
+            <li>{r}</li>
+          ))}
+        </ul>
+      )
+    }
+    {
+      tags.length > 0 && (
+        <ul class="chips" aria-label={t.techAria}>
+          {tags.map((tag) => (
+            <li class="chip">{tag}</li>
+          ))}
+        </ul>
+      )
+    }
+    <span class="project-card__cta" aria-hidden="true">{t.readCase}</span>
+  </a>
+</li>

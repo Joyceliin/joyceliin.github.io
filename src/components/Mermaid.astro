@@ -1,0 +1,184 @@
+---
+/**
+ * Astro/Shiki emits mermaid fences as pre[data-language="mermaid"].
+ * Convert those blocks into rendered diagrams with lightbox zoom.
+ */
+import { ui, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang?: Lang;
+}
+
+const t = ui[Astro.props.lang ?? "pt"];
+const labels = {
+  zoom: t.zoom,
+  zoomAria: t.zoomAria,
+  zoomIn: t.zoomIn,
+  zoomOut: t.zoomOut,
+  zoomReset: t.zoomReset,
+  close: t.close,
+  dialog: t.dialogLabel,
+};
+---
+
+<span id="mermaid-labels" data-labels={JSON.stringify(labels)} hidden></span>
+
+<script is:inline type="module">
+  const L = JSON.parse(document.getElementById("mermaid-labels")?.dataset.labels || "{}");
+
+  function setupLightbox() {
+    let lightbox = document.querySelector(".diagram-lightbox");
+    if (!lightbox) {
+      lightbox = document.createElement("div");
+      lightbox.className = "diagram-lightbox";
+      lightbox.hidden = true;
+      lightbox.innerHTML = `
+        <div class="diagram-lightbox__backdrop" data-close></div>
+        <div class="diagram-lightbox__panel" role="dialog" aria-modal="true" aria-label="${L.dialog}">
+          <div class="diagram-lightbox__toolbar">
+            <button type="button" class="diagram-lightbox__btn" data-zoom-out aria-label="${L.zoomOut}">−</button>
+            <button type="button" class="diagram-lightbox__btn" data-zoom-in aria-label="${L.zoomIn}">+</button>
+            <button type="button" class="diagram-lightbox__btn" data-zoom-reset aria-label="${L.zoomReset}">100%</button>
+            <button type="button" class="diagram-lightbox__btn diagram-lightbox__btn--close" data-close aria-label="${L.close}">✕</button>
+          </div>
+          <div class="diagram-lightbox__stage">
+            <div class="diagram-lightbox__content"></div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(lightbox);
+    }
+
+    const content = lightbox.querySelector(".diagram-lightbox__content");
+    const stage = lightbox.querySelector(".diagram-lightbox__stage");
+    let scale = 1;
+
+    function applyScale() {
+      content.style.transform = `scale(${scale})`;
+      const resetBtn = lightbox.querySelector("[data-zoom-reset]");
+      if (resetBtn) resetBtn.textContent = `${Math.round(scale * 100)}%`;
+    }
+
+    function openFrom(figure) {
+      const source = figure.querySelector(".mermaid");
+      if (!source || !content) return;
+      content.innerHTML = source.innerHTML;
+      scale = 1;
+      applyScale();
+      lightbox.hidden = false;
+      document.body.classList.add("diagram-lightbox-open");
+      stage.scrollTop = 0;
+      stage.scrollLeft = 0;
+    }
+
+    function close() {
+      lightbox.hidden = true;
+      document.body.classList.remove("diagram-lightbox-open");
+      if (content) content.innerHTML = "";
+      scale = 1;
+    }
+
+    document.querySelectorAll(".diagram-frame").forEach((figure) => {
+      const open = () => openFrom(figure);
+      figure.querySelector("[data-diagram-zoom]")?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        open();
+      });
+      figure.querySelector(".mermaid")?.addEventListener("click", open);
+    });
+
+    lightbox.querySelectorAll("[data-close]").forEach((el) => {
+      el.addEventListener("click", close);
+    });
+    lightbox.querySelector("[data-zoom-in]")?.addEventListener("click", () => {
+      scale = Math.min(3, scale + 0.2);
+      applyScale();
+    });
+    lightbox.querySelector("[data-zoom-out]")?.addEventListener("click", () => {
+      scale = Math.max(0.5, scale - 0.2);
+      applyScale();
+    });
+    lightbox.querySelector("[data-zoom-reset]")?.addEventListener("click", () => {
+      scale = 1;
+      applyScale();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !lightbox.hidden) close();
+    });
+
+    stage?.addEventListener(
+      "wheel",
+      (e) => {
+        if (lightbox.hidden) return;
+        if (!e.ctrlKey && !e.metaKey) return;
+        e.preventDefault();
+        scale = Math.min(3, Math.max(0.5, scale + (e.deltaY < 0 ? 0.1 : -0.1)));
+        applyScale();
+      },
+      { passive: false },
+    );
+  }
+
+  async function renderMermaid() {
+    const blocks = document.querySelectorAll("pre[data-language='mermaid']");
+    if (!blocks.length) return;
+
+    const { default: mermaid } = await import(
+      "https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs"
+    );
+
+    // Paleta do site (ver --accent / --ink em global.css).
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: "base",
+      securityLevel: "strict",
+      flowchart: { htmlLabels: true },
+      themeVariables: {
+        fontFamily: '"Source Sans 3", "Segoe UI", sans-serif',
+        fontSize: "15px",
+        primaryColor: "#e3f1ef",
+        primaryBorderColor: "#0d6660",
+        primaryTextColor: "#0a1c28",
+        secondaryColor: "#eef3f7",
+        tertiaryColor: "#f7fafc",
+        clusterBkg: "#f4f8fb",
+        clusterBorder: "#b9ccd8",
+        lineColor: "#3d5566",
+        edgeLabelBackground: "#ffffff",
+      },
+    });
+
+    const targets = [];
+    blocks.forEach((pre, index) => {
+      const frame = document.createElement("figure");
+      frame.className = "diagram-frame";
+
+      const graph = document.createElement("div");
+      graph.className = "mermaid";
+      graph.id = `mermaid-${index}`;
+      graph.textContent = pre.textContent || "";
+
+      const zoomBtn = document.createElement("button");
+      zoomBtn.type = "button";
+      zoomBtn.className = "diagram-frame__zoom";
+      zoomBtn.setAttribute("data-diagram-zoom", "");
+      zoomBtn.setAttribute("aria-label", L.zoomAria);
+      zoomBtn.textContent = L.zoom;
+
+      frame.appendChild(zoomBtn);
+      frame.appendChild(graph);
+      pre.replaceWith(frame);
+      targets.push(graph);
+    });
+
+    await mermaid.run({ nodes: targets });
+    setupLightbox();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", renderMermaid);
+  } else {
+    renderMermaid();
+  }
+</script>

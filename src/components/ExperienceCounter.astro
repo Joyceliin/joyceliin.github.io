@@ -1,0 +1,81 @@
+---
+import { profile, yearsSince } from "../data/profile";
+
+interface Props {
+  /** Início da trajetória em dados (ISO). Padrão: primeiro cargo de BI. */
+  startDate?: string;
+  /** hero = bloco destacado; inline = número no meio do texto */
+  variant?: "hero" | "inline";
+  label?: string;
+}
+
+const {
+  startDate = profile.careerStart,
+  variant = "hero",
+  label = "anos trabalhando com dados",
+} = Astro.props;
+
+// Valor real já no HTML: crawlers, preview de link, leitor de tela e quem
+// está sem JS veem o número certo. O script só anima e recalcula no cliente.
+const years = yearsSince(startDate);
+---
+
+{
+  variant === "inline" ? (
+    <span class="exp-counter exp-counter--inline" data-exp-counter data-start={startDate}>
+      <span class="exp-counter__value" data-exp-value>{years}</span>
+    </span>
+  ) : (
+    <p class="exp-counter exp-counter--hero" data-exp-counter data-start={startDate}>
+      <span class="exp-counter__value" data-exp-value>{years}</span>
+      <span class="exp-counter__label">{label}</span>
+    </p>
+  )
+}
+
+<script is:inline>
+  (function () {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    function yearsSince(iso) {
+      const start = new Date(iso + "T00:00:00");
+      if (Number.isNaN(start.getTime())) return null;
+      const years = (Date.now() - start.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+      return Math.max(0, Math.floor(years));
+    }
+
+    function animate(el, target) {
+      const t0 = performance.now();
+      const duration = 900;
+      function frame(now) {
+        const t = Math.min(1, (now - t0) / duration);
+        el.textContent = String(Math.round((1 - Math.pow(1 - t, 3)) * target));
+        if (t < 1) requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    }
+
+    document.querySelectorAll("[data-exp-counter]").forEach(function (node) {
+      if (node.dataset.expDone === "1") return;
+      node.dataset.expDone = "1";
+      const valueEl = node.querySelector("[data-exp-value]");
+      const target = yearsSince(node.getAttribute("data-start"));
+      if (!valueEl || target === null) return;
+      if (!("IntersectionObserver" in window)) {
+        valueEl.textContent = String(target);
+        return;
+      }
+      const io = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            io.disconnect();
+            animate(valueEl, target);
+          });
+        },
+        { threshold: 0.4 },
+      );
+      io.observe(node);
+    });
+  })();
+</script>

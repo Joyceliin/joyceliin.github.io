@@ -1,0 +1,52 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import { getData } from "../data";
+import { getProjects } from "../data/projects";
+import { caseHref, routes, ui, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = ui[lang];
+const { profile, home } = getData(lang);
+const projects = (await getProjects(lang)).slice(0, 3);
+const other: Lang = lang === "pt" ? "en" : "pt";
+---
+
+<BaseLayout title={profile.name} description={`${profile.role}. ${profile.summary}`} lang={lang} alt={routes.home[other]}>
+  <header class="page-intro">
+    <p class="eyebrow">{profile.role}</p>
+    <h1 class="hero__name">{profile.name}</h1>
+    <p class="hero__headline">{profile.headline}.</p>
+    {home.paragraphs.map((p) => <p class="hero__lead">{p}</p>)}
+    <div class="hero__actions">
+      <a class="btn btn--primary" href={routes.projects[lang]}>{t.seeCases}</a>
+    </div>
+  </header>
+
+  <section class="section" aria-labelledby="cases">
+    <div class="section__head">
+      <h2 class="section__title" id="cases">{t.cases}</h2>
+      <a class="section__more" href={routes.projects[lang]}>{t.allCases}</a>
+    </div>
+    <ul class="project-list">
+      {
+        projects.map((project) => (
+          <ProjectCard
+            href={caseHref(project.caseSlug, lang)}
+            title={project.data.title}
+            summary={project.data.summary}
+            meta={project.data.meta}
+            tags={project.data.tags}
+            results={project.data.results}
+            headingLevel={3}
+            lang={lang}
+          />
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>

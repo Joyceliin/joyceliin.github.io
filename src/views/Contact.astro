@@ -1,0 +1,39 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getData } from "../data";
+import { routes, ui, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = ui[lang];
+const { profile } = getData(lang);
+const other: Lang = lang === "pt" ? "en" : "pt";
+---
+
+<BaseLayout title={t.contactTitle} description={t.contactDescription} lang={lang} alt={routes.contact[other]}>
+  <header class="page-intro">
+    <p class="eyebrow">{t.contactTitle}</p>
+    <h1 class="page-intro__title">{t.contactHeading}</h1>
+    <p class="page-intro__lead">{t.contactLead}</p>
+  </header>
+
+  <ul class="contact-list">
+    <li>
+      <span class="contact-list__label">{t.email}</span>
+      <a href={`mailto:${profile.email}`}>{profile.email}</a>
+    </li>
+    <li>
+      <span class="contact-list__label">GitHub</span>
+      <a href={profile.github} target="_blank" rel="noopener noreferrer">
+        {profile.github.replace(/^https?:\/\//, "")}
+      </a>
+    </li>
+    <li>
+      <span class="contact-list__label">{t.location}</span>
+      <span>{profile.location}</span>
+    </li>
+  </ul>
+</BaseLayout>

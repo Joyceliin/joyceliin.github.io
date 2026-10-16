@@ -1,0 +1,98 @@
+---
+/**
+ * Arte 1200×630 usada como og:image. Não é página de navegação: serve de
+ * fonte para `npm run assets`, que tira o screenshot em public/og*.png.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getData } from "../data";
+import type { Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const { profile, stackPrimary } = getData(lang);
+---
+
+<BaseLayout title="og" lang={lang} bare>
+  <meta name="robots" content="noindex" slot="head" />
+  <div class="og">
+    <p class="og__eyebrow">{profile.role}</p>
+    <p class="og__name">{profile.name}</p>
+    <p class="og__headline">{profile.headline}.</p>
+    <ul class="og__chips">
+      {stackPrimary.slice(0, 7).map((s) => <li>{s}</li>)}
+    </ul>
+    <p class="og__url">joyceliin.github.io</p>
+  </div>
+</BaseLayout>
+
+<style>
+  .og {
+    position: fixed;
+    inset: 0;
+    width: 1200px;
+    height: 630px;
+    padding: 72px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background:
+      radial-gradient(ellipse 70% 80% at 0% 0%, rgba(13, 102, 96, 0.22), transparent 60%),
+      #eaf0f4;
+    color: #0a1c28;
+    border-bottom: 14px solid #0d6660;
+  }
+  .og__eyebrow {
+    margin: 0 0 14px;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #0d6660;
+  }
+  .og__name {
+    margin: 0 0 22px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 104px;
+    letter-spacing: -0.045em;
+    line-height: 0.95;
+  }
+  .og__headline {
+    margin: 0 0 34px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 38px;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    max-width: 900px;
+  }
+  .og__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .og__chips li {
+    padding: 6px 16px;
+    border: 1px solid rgba(10, 28, 40, 0.18);
+    border-radius: 999px;
+    background: #fff;
+    font-size: 22px;
+    font-weight: 600;
+    color: #3d5566;
+  }
+  .og__url {
+    position: absolute;
+    right: 80px;
+    bottom: 40px;
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    color: #3d5566;
+  }
+</style>

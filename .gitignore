@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.astro/
+site/
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Local private context — never publish
+contexto/
+
+# Archives / local dumps
+docs.zip
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

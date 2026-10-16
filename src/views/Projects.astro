@@ -1,0 +1,39 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import { getProjects } from "../data/projects";
+import { caseHref, routes, ui, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = ui[lang];
+const projects = await getProjects(lang);
+const other: Lang = lang === "pt" ? "en" : "pt";
+---
+
+<BaseLayout title={t.projectsTitle} description={t.projectsDescription} lang={lang} alt={routes.projects[other]}>
+  <header class="page-intro">
+    <p class="eyebrow">{t.projectsTitle}</p>
+    <h1 class="page-intro__title">{t.cases}</h1>
+    <p class="page-intro__lead">{t.projectsLead}</p>
+  </header>
+
+  <ul class="project-list">
+    {
+      projects.map((project) => (
+        <ProjectCard
+          href={caseHref(project.caseSlug, lang)}
+          title={project.data.title}
+          summary={project.data.summary}
+          meta={project.data.meta}
+          tags={project.data.tags}
+          results={project.data.results}
+          lang={lang}
+        />
+      ))
+    }
+  </ul>
+</BaseLayout>
